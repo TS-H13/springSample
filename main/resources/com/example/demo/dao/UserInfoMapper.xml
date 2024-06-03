@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.dao.UserInfoMapper">
+
+	<!-- 全件検索 -->
+	<select id="findAll" resultType="com.example.demo.entity.UserInfo">
+		SELECT *
+		  FROM userinfo LEFT OUTER JOIN department 
+		    ON userinfo.department_id = department.id 
+		 WHERE delete_date IS NULL
+	</select>
+	
+	<!-- 論理削除ユーザー検索 -->
+	<select id="deleteUserFindAll" resultType="com.example.demo.entity.UserInfo">
+		SELECT *
+		  FROM userinfo LEFT OUTER JOIN department 
+		    ON userinfo.department_id = department.id 
+		 WHERE delete_date IS NOT NULL
+	</select>
+	
+	<!-- 主キー検索 -->
+	<select id="findById" resultType="com.example.demo.entity.UserInfo">
+		SELECT * 
+		  FROM userinfo LEFT OUTER JOIN department 
+		    ON userinfo.department_id = department.id 
+		 WHERE userinfo.id=#{id} AND delete_date IS NULL
+	</select>
+	
+	<!-- 条件指定検索 -->
+	<select id="search" resultType="com.example.demo.entity.UserInfo">
+		SELECT
+			 *
+		  FROM
+			   userinfo LEFT OUTER JOIN department 
+		    ON userinfo.department_id = department.id
+		 WHERE delete_date IS NULL
+			<if test="id != null and id != ''">
+				AND userinfo.id = #{id}
+			</if>
+			<if test="name != null and name != ''">
+				AND userinfo.name LIKE CONCAT('%', #{name}, '%')
+			</if>
+			<if test="departmentId != null and departmentId != ''">
+				AND userinfo.department_id = #{departmentId}
+			</if>
+			<if test="departmentName != null and departmentName != ''">
+				AND department.department_name LIKE CONCAT('%', #{departmentName}, '%')
+			</if>
+			<if test="sortOrder != null">
+        		ORDER BY userinfo.id ${sortOrder}
+        	</if>
+	</select>
+	
+	<!-- 新規登録 -->
+	<insert id="save">
+		INSERT INTO userInfo
+			(name, address, phone, update_date, create_date, department_id)
+		VALUES
+			(#{name}, #{address}, #{phone}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, #{departmentId})
+	</insert>
+
+	<!-- 更新 -->
+	<update id="update">
+		UPDATE userinfo SET name = #{name}, address = #{address}, phone = #{phone}, update_date = CURRENT_TIMESTAMP, department_id = #{departmentId} WHERE id = #{id}
+	</update>
+	
+	<!-- 論理削除 -->
+	<update id="softDelete">
+		UPDATE userinfo SET delete_date = CURRENT_TIMESTAMP WHERE id = #{id}
+	</update>
+	
+	<!-- 物理削除 -->
+    <update id="delete">
+    	DELETE FROM userinfo WHERE id = #{id}
+    </update>
+    
+    <!-- 復元 -->
+	<update id="restoration">
+		UPDATE userinfo SET delete_date = NULL WHERE id = #{id}
+	</update>
+</mapper>
